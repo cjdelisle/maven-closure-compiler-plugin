@@ -64,15 +64,19 @@ public class ClosureCompilerMojo extends AbstractMojo {
         final String fileName = js.getName();
         final String target = targetPath(useVersion, fileName);
         final String source = sourcePath(js);
-        final ClosureCompilerRunner runner = new ClosureCompilerRunner(compilation_level, source, target);
-        if (runner.shouldRunCompiler()) {
-            try {
-                runner.run();
-            } catch (SecurityException e) {
-                // expected throw when run finishes it calls System.exit.
-            }
+        if (js.lastModified() > new File(target).lastModified()) {
+	        final ClosureCompilerRunner runner = new ClosureCompilerRunner(compilation_level, source, target);
+	        if (runner.shouldRunCompiler()) {
+	            try {
+	                runner.run();
+	            } catch (SecurityException e) {
+	                // expected throw when run finishes it calls System.exit.
+	            }
+	        }
+	        getLog().debug("Compiled file: " + source + " to file: " + target);
+        } else {
+	        getLog().debug("Skipped file because not modified: " + source);
         }
-        getLog().debug("Compiled file: " + source + " to file: " + target);
     }
 
     /**
