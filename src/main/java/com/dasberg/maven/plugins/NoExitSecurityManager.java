@@ -20,6 +20,9 @@ public class NoExitSecurityManager extends SecurityManager {
 
     @Override
     public void checkExit(final int status) {
+        if (status != 0) {
+            throw new RuntimeException("ClosureCompiler exited with return code [" + status + "]");
+        }
         throw new SecurityException("ClosureCompilerRunner called System.exit(..). Ignoring!");
     }
 }
