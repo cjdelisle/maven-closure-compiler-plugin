@@ -4,6 +4,7 @@ import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 
 import java.io.File;
+import java.util.List;
 
 import static org.apache.commons.lang.StringUtils.isEmpty;
 
@@ -32,6 +33,12 @@ public class ClosureCompilerMojo extends AbstractMojo {
     private File js_output_dir;
 
     /**
+     * Additional arguments to the closure compiler.
+     * @parameter expression=""
+     */
+    private List<String> args;
+
+    /**
      * Version.
      * @parameter expression="${version}"
      */
@@ -44,15 +51,18 @@ public class ClosureCompilerMojo extends AbstractMojo {
      */
     public void execute() throws MojoExecutionException {
         SecurityManager defaultSecurityManager = System.getSecurityManager();
-        System.setSecurityManager(new NoExitSecurityManager()); // needed because System.exit is called by the runner.
-        if (isValid(js_dir) && isValid(js_output_dir)) {
-            for (File js : js_dir.listFiles(new JsFilenameFilter())) {
-                compile(js);
+        try {
+            System.setSecurityManager(new NoExitSecurityManager()); // needed because System.exit is called by the runner.
+            if (isValid(js_dir) && isValid(js_output_dir)) {
+                for (File js : js_dir.listFiles(new JsFilenameFilter())) {
+                    compile(js);
+                }
+            } else {
+                getLog().error("The given directories are not valid or are missing. Please check the configuration.");
             }
-        } else {
-            getLog().error("The given directories are not valid or are missing. Please check the configuration.");
+        } finally {
+            System.setSecurityManager(defaultSecurityManager); // set back to original security manager.
         }
-        System.setSecurityManager(defaultSecurityManager); // set back to original security manager.
     }
 
     /**
@@ -64,7 +74,26 @@ public class ClosureCompilerMojo extends AbstractMojo {
         final String fileName = js.getName();
         final String target = targetPath(useVersion, fileName);
         final String source = sourcePath(js);
-        final ClosureCompilerRunner runner = new ClosureCompilerRunner(compilation_level, source, target);
+
+        String[] aa = new String[((args != null) ? args.size() : 0) + 6];
+        int i = 0;
+        aa[i++] = "--compilation_level";
+        aa[i++] = compilation_level;
+
+        aa[i++] = "--js";
+        aa[i++] = source;
+
+        aa[i++] = "--js_output_file";
+        aa[i++] = target;
+
+        if (args != null) {
+            for (String s : args) {
+                aa[i++] = s;
+            }
+        }
+
+        getLog().info("Compiling: " + source + " to: " + target);
+        final ClosureCompilerRunner runner = new ClosureCompilerRunner(aa);
         if (runner.shouldRunCompiler()) {
             try {
                 runner.run();
@@ -72,7 +101,6 @@ public class ClosureCompilerMojo extends AbstractMojo {
                 // expected throw when run finishes it calls System.exit.
             }
         }
-        getLog().debug("Compiled file: " + source + " to file: " + target);
     }
 
     /**

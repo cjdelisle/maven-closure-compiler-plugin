@@ -30,7 +30,7 @@
 
     <properties>
         <maven-plugin-api.version>2.0</maven-plugin-api.version>
-        <maven-closure-compiler.version>r1459</maven-closure-compiler.version>
+        <maven-closure-compiler.version>r2388</maven-closure-compiler.version>
         <commons-lang.version>2.6</commons-lang.version>
         <commons-io.version>2.1</commons-io.version>
     </properties>
