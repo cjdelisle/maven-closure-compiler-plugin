@@ -63,8 +63,8 @@ public class MojoTest extends AbstractMojoTestCase {
         assertEquals("", mojoLogger.error());
         File[] compiledFiles = getCompiledFiles();
         assertEquals(2, compiledFiles.length);
-        assertEquals("one.js", compiledFiles[0].getName());
-        assertEquals("two.js", compiledFiles[1].getName());
+        assertContainsFile(compiledFiles, "one.js");
+        assertContainsFile(compiledFiles, "two.js");
         cleanTargetDirectory();
         // with version
         setVariableValueToObject(mojo, "version", "1.0.0");
@@ -72,8 +72,8 @@ public class MojoTest extends AbstractMojoTestCase {
         assertEquals("", mojoLogger.error());
         compiledFiles = getCompiledFiles();
         assertEquals(2, compiledFiles.length);
-        assertEquals("one-1.0.0.js", compiledFiles[0].getName());
-        assertEquals("two-1.0.0.js", compiledFiles[1].getName());
+        assertContainsFile(compiledFiles, "one-1.0.0.js");
+        assertContainsFile(compiledFiles, "two-1.0.0.js");
 
     }
 
@@ -81,6 +81,18 @@ public class MojoTest extends AbstractMojoTestCase {
     protected void tearDown() throws Exception {
         super.tearDown();
         cleanTargetDirectory();
+    }
+
+    /** Fail unless a file named name is contained in the array. */
+    private void assertContainsFile(File[] array, String name) {
+        String contents = "";
+        for (File f : array) {
+            if (f.getName().equals(name)) {
+                return;
+            }
+            contents += f.getName() + ", ";
+        }
+        fail("file called [" + name + "] not found in list [" + contents + "]");
     }
 
     /** Cleans the target directory by removing all compiled files. */
