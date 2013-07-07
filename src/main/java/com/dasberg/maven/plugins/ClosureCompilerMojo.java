@@ -92,7 +92,7 @@ public class ClosureCompilerMojo extends AbstractMojo {
             }
         }
 
-        getLog().info("Compiling: " + source + " to: " + target);
+        getLog().info("Compiling: " + source);
         final ClosureCompilerRunner runner = new ClosureCompilerRunner(aa);
         if (runner.shouldRunCompiler()) {
             try {
